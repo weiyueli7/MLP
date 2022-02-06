@@ -7,7 +7,7 @@ from data import *
 from neuralnet import *
 import matplotlib.pyplot as plt
 
-def train(x_train, y_train, x_val, y_val, config):
+def train(x_train, y_train, x_val, y_val, config, regularization = False, L = 'L1'):
     """
     Train your model here using batch stochastic gradient descent and early stopping. Use config to set parameters
     for training like learning rate, momentum, etc.
@@ -50,8 +50,14 @@ def train(x_train, y_train, x_val, y_val, config):
             
             pred, loss = model.forward(batch[0], batch[1])
             
-            model.backward()                       
-        
+            if regularization:
+            
+                model.backward(regularization, L)
+                
+            else:
+                
+                model.backward()
+    
         train_pred, train_losses = model.forward(x_train, y_train)
         
         train_accuracy = accuracy(train_pred, y_train)
@@ -115,7 +121,7 @@ def accuracy(pred, target):
     return np.mean(np.argmax(pred, axis = 1) == onehot_decode(target))
 
 
-def train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config):
+def train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config, regularization = False, L = 'L1'):
     """
     This function trains a single multi-layer perceptron and plots its performances.
 
@@ -125,12 +131,11 @@ def train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config):
     """
     # train the model
     train_acc, valid_acc, train_loss, valid_loss, best_model = \
-        train(x_train, y_train, x_val, y_val, config)
+        train(x_train, y_train, x_val, y_val, config, regularization, L)
 
     test_loss, test_acc = test(best_model, x_test, y_test)
 
     print("Config: %r" % config)
-    print("Train Accuracy: ", train_acc[-1])
     print("Train Loss: ", train_loss[-1])
     print("Validation Loss: ", valid_loss[-1])
     print("Validation Accuracy: ", valid_acc[-1])
@@ -140,14 +145,16 @@ def train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config):
     # DO NOT modify the code below.
     data = {'train_loss': train_loss, 'val_loss': valid_loss, 'train_acc': train_acc, 'val_acc': valid_acc,
             'best_model': best_model, 'test_loss': test_loss, 'test_acc': test_acc}
-    
+
+    #write_to_file('./results.pkl', data)
+
     data_plt, label_plt = data['train_acc'], "Training Accuracy"
     data2_plt, label2_plt = data['val_acc'], "Validation Accuracy"
     data3_plt, label3_plt = data['train_loss'], "Training Loss"
     data4_plt, label4_plt = data['val_loss'], "Validation Loss"
     xlabel_plt, ylabel_plt = "Epochs", "Accuracy"
     xlabel2_plt, ylabel2_plt = "Epochs", "Loss"
-    
+
     # 1st plot
     fig, ax = plt.subplots()
     ax.plot(data_plt, label = label_plt)
@@ -182,13 +189,11 @@ def activation_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config
     """
     This function tests all the different activation functions available and then plots their performances.
     """
-    result = []
     activations = ['sigmoid', 'tanh', 'ReLU']
     config_copy = config
     for activation in activations:
         config_copy['activation'] = activation
-        result.append(train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy))
-    return result
+        train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy)
 
 def topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     """
@@ -199,47 +204,52 @@ def topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     number of parameters roughly equal to the number of parameters of the best performing
     model previously.
     """
-    result = []
     units = [64, 128, 256]
     config_copy = config
     for unit in units:
         config_copy['layer_specs'][1] = unit
-        result.append(train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy))
+        train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy)
     double_hidden = [784, 203, 203, 10]
     config_copy['layer_specs'] = double_hidden
-    result.append(train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy))
-    return result
+    train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy)
 
 
-def regularization_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
+def regularization_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config, L = 'L1'):
     """
     This function tests the neural network with regularization.
     """
-    raise NotImplementedError('Regularization Experiment not implemented')
+    config_copy = config
+    config_copy['epochs'] = 110
+    train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy, True, L)
 
 
-def check_gradients(x_train, y_train, adjust, config):
+def check_gradients(x_train, y_train, adjust, config, random_row):
     """
     Check the network gradients computed by back propagation by comparing with the gradients computed using numerical
     approximation.
     """
     model = NeuralNetwork(load_config('config.yaml'))
-    layer = model.layers[0]
-    save = copy.deepcopy(layer.w[0][0])
+    layer = model.layers[2]
+    save = copy.deepcopy(layer.b[0][random_row])
     
-    layer.w[0][0] += adjust
+    layer.b[0][random_row] += adjust
     loss_one = model(x_train, y_train)[1]
+    print(loss_one)
     
-    layer.w[0][0] = save
-    layer.w[0][0] -= adjust
+    layer.b[0][random_row] = save
+    layer.b[0][random_row] -= adjust
     loss_two = model(x_train, y_train)[1]
+    print(loss_two)
     
     numeric = (loss_one - loss_two) / (2 * adjust)
+    print("numerical approximation: " + str(numeric))
     
-    layer.w[0][0] = save
+    layer.b[0][random_row] = save
     model(x_train, y_train)
     model.backward()
-    backward_result = layer.d_w[0][0]
+    backward_result = layer.d_b[random_row]
+    print("backpropagation gradient: " + str(backward_result))
     
     diff = abs(backward_result - numeric)
+    print("absolute error: " + str(diff))
     return diff
