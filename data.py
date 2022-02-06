@@ -5,16 +5,38 @@
 ################################################################################
 import os
 import pickle
-
+import copy
 import numpy as np
 import yaml
+from tqdm import tqdm
 
 
 def one_hot_encoding(labels, num_classes=10):
     """
     Encode labels using one hot encoding and return them.
     """
-    raise NotImplementedError('One Hot Encoding not implemented')
+    return np.eye(num_classes)[labels]
+
+
+def onehot_decode(labels):
+    """
+    Performs one-hot decoding on labels.
+
+    Ideas:
+        NumPy's `argmax` function 
+
+    Parameters
+    ----------
+    labels : np.array
+        2d array (shape n*k) with each row corresponding to 
+        a one-hot encoded version of the original value.
+
+    Returns
+    -------
+        1d array (length n) of targets (k)
+    """
+    # return the onehot decoded vector by using given `argmax` hint
+    return np.argmax(labels, axis=1)
 
 
 def write_to_file(path, data):
@@ -114,3 +136,60 @@ def z_score_normalize(X, u=None, sd=None):
     if sd is None:
         sd = np.std(X, axis=0)
     return ((X - u) / sd), (u, sd)
+
+
+def shuffle(dataset):
+    """
+    Shuffle dataset.
+
+    Make sure that corresponding images and labels are kept together. 
+    Ideas: 
+        NumPy array indexing 
+            https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing
+
+    Parameters
+    ----------
+    dataset
+        Tuple containing
+            Images (X)
+            Labels (y)
+
+    Returns
+    -------
+        Tuple containing
+            Images (X)
+            Labels (y)
+    """
+    # find the number of images in the data and save their indexes as an array
+    idx = np.arange(len(dataset[0]))
+    # shuffle the above array in-place
+    np.random.shuffle(idx)
+    # return the shuffled dataset
+    return dataset[0][idx], dataset[1][idx]
+
+
+def generate_minibatches(dataset, batch_size=128):
+    """
+    Helper method to generate minibatches
+
+    Parameters
+    ----------
+    dataset
+        Tuple containing
+            Images (X)
+            Labels (y)
+    batch_size
+        int with default of 64
+    Returns
+    -------
+        smaller Tuple:
+            Images (X)
+            Labels (y)
+    """
+    # given by the startercode without modification
+    X, y = dataset
+    l_idx, r_idx = 0, batch_size
+    while r_idx < len(X):
+        yield X[l_idx:r_idx], y[l_idx:r_idx]
+        l_idx, r_idx = r_idx, r_idx + batch_size
+    yield X[l_idx:], y[l_idx:]

@@ -3,11 +3,11 @@
 # Code snippet by Eric Yang Yu, Ajit Kumar, Savyasachi
 # Winter 2022
 ################################################################################
-from data import write_to_file
+from data import *
 from neuralnet import *
+import matplotlib.pyplot as plt
 
-
-def train(x_train, y_train, x_val, y_val, config, experiment=None):
+def train(x_train, y_train, x_val, y_val, config):
     """
     Train your model here using batch stochastic gradient descent and early stopping. Use config to set parameters
     for training like learning rate, momentum, etc.
@@ -30,11 +30,66 @@ def train(x_train, y_train, x_val, y_val, config, experiment=None):
     train_loss = []
     val_loss = []
     best_model = None
-
+    best_model_loss = float("inf")
+    
     model = NeuralNetwork(config=config)
+    
+    patience = 0
+    
+    count_epoch = 0
+    
+    for epoch in tqdm(range(config['epochs'])):
+        
+        count_epoch += 1
+        
+        x_train, y_train = shuffle((x_train, y_train))
+        
+        x_val, y_val = shuffle((x_val, y_val))
+        
+        for batch in generate_minibatches((x_train, y_train), config['batch_size']):
+            
+            pred, loss = model.forward(batch[0], batch[1])
+            
+            model.backward()                       
+        
+        train_pred, train_losses = model.forward(x_train, y_train)
+        
+        train_accuracy = accuracy(train_pred, y_train)
+        
+        train_loss.append(train_losses)
+        
+        train_acc.append(train_accuracy)
+        
+        val_pred, val_losses = model.forward(x_val, y_val)
+        
+        val_accuracy = accuracy(val_pred, y_val)
 
-    # return train_acc, val_acc, train_loss, val_loss, best_model
-    raise NotImplementedError('Train not implemented')
+        val_loss.append(val_losses)
+        
+        val_acc.append(val_accuracy)
+        
+        if val_losses < best_model_loss:
+            
+            best_model_loss = val_losses
+            
+            best_model = copy.deepcopy(model)
+            
+        if config['early_stop']:
+        
+            if val_losses > best_model_loss:
+            
+                patience += 1
+            
+                if patience == config['early_stop_epoch']:
+                
+                    break
+            
+            else:
+                
+                patience = 0
+        
+    return train_acc, val_acc, train_loss, val_loss, best_model                 
+    
 
 
 def test(model, x_test, y_test):
@@ -50,7 +105,14 @@ def test(model, x_test, y_test):
         Loss, Test accuracy
     """
     # return loss, accuracy
-    raise NotImplementedError('Test not implemented')
+    test_pred, test_loss = model.forward(x_test, y_test)
+    
+    acc = np.mean(np.argmax(test_pred, axis = 1) == onehot_decode(y_test))
+    
+    return test_loss, acc
+
+def accuracy(pred, target):
+    return np.mean(np.argmax(pred, axis = 1) == onehot_decode(target))
 
 
 def train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config):
@@ -68,22 +130,65 @@ def train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config):
     test_loss, test_acc = test(best_model, x_test, y_test)
 
     print("Config: %r" % config)
-    print("Test Loss", test_loss)
-    print("Test Accuracy", test_acc)
+    print("Train Accuracy: ", train_acc[-1])
+    print("Train Loss: ", train_loss[-1])
+    print("Validation Loss: ", valid_loss[-1])
+    print("Validation Accuracy: ", valid_acc[-1])
+    print("Test Loss: ", test_loss)
+    print("Test Accuracy: ", test_acc)
 
     # DO NOT modify the code below.
     data = {'train_loss': train_loss, 'val_loss': valid_loss, 'train_acc': train_acc, 'val_acc': valid_acc,
             'best_model': best_model, 'test_loss': test_loss, 'test_acc': test_acc}
+    
+    data_plt, label_plt = data['train_acc'], "Training Accuracy"
+    data2_plt, label2_plt = data['val_acc'], "Validation Accuracy"
+    data3_plt, label3_plt = data['train_loss'], "Training Loss"
+    data4_plt, label4_plt = data['val_loss'], "Validation Loss"
+    xlabel_plt, ylabel_plt = "Epochs", "Accuracy"
+    xlabel2_plt, ylabel2_plt = "Epochs", "Loss"
+    
+    # 1st plot
+    fig, ax = plt.subplots()
+    ax.plot(data_plt, label = label_plt)
+    ax.plot(data2_plt, label = label2_plt)
+    plt.xlabel(xlabel_plt)
+    plt.ylabel(ylabel_plt)
+    plt.title(str(config['learning_rate']).replace('.', '') + '_' + \
+                config['activation'] + '_' + str(config['early_stop'])[0].lower() + '_acc')
+    legend = ax.legend(loc='lower right')
+    plt.savefig( str(config['learning_rate']).replace('.', '') + '_' + \
+        config['activation'] + '_' + str(config['early_stop'])[0].lower() + "_" + \
+        str(config['layer_specs'])[1:-1].replace(", ", "_") + '_acc.png')
+    
+    # 2nd plot
+    fig, ax = plt.subplots()
+    ax.plot(data3_plt, label = label3_plt)
+    ax.plot(data4_plt, label = label4_plt)
+    plt.xlabel(xlabel2_plt)
+    plt.ylabel(ylabel2_plt)
+    plt.title(str(config['learning_rate']).replace('.', '') + '_' + \
+                config['activation'] + '_' + str(config['early_stop'])[0].lower() + '_loss')
+    legend = ax.legend(loc='upper right')
+    plt.savefig( str(config['learning_rate']).replace('.', '') + '_' + \
+            config['activation'] + '_' + str(config['early_stop'])[0].lower() + "_" + \
+            str(config['layer_specs'])[1:-1].replace(", ", "_") + '_loss.png')
 
-    write_to_file('./results.pkl', data)
+    #write_to_file('./results.pkl', data)
+    return data
 
 
 def activation_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     """
     This function tests all the different activation functions available and then plots their performances.
     """
-    raise NotImplementedError('Activation Experiment not implemented')
-
+    result = []
+    activations = ['sigmoid', 'tanh', 'ReLU']
+    config_copy = config
+    for activation in activations:
+        config_copy['activation'] = activation
+        result.append(train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy))
+    return result
 
 def topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     """
@@ -94,7 +199,16 @@ def topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
     number of parameters roughly equal to the number of parameters of the best performing
     model previously.
     """
-    raise NotImplementedError('Topology Experiment not implemented')
+    result = []
+    units = [64, 128, 256]
+    config_copy = config
+    for unit in units:
+        config_copy['layer_specs'][1] = unit
+        result.append(train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy))
+    double_hidden = [784, 203, 203, 10]
+    config_copy['layer_specs'] = double_hidden
+    result.append(train_mlp(x_train, y_train, x_val, y_val, x_test, y_test, config_copy))
+    return result
 
 
 def regularization_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config):
@@ -104,9 +218,28 @@ def regularization_experiment(x_train, y_train, x_val, y_val, x_test, y_test, co
     raise NotImplementedError('Regularization Experiment not implemented')
 
 
-def check_gradients(x_train, y_train, config):
+def check_gradients(x_train, y_train, adjust, config):
     """
     Check the network gradients computed by back propagation by comparing with the gradients computed using numerical
     approximation.
     """
-    raise NotImplementedError('Check Gradients Experiment not implemented')
+    model = NeuralNetwork(load_config('config.yaml'))
+    layer = model.layers[0]
+    save = copy.deepcopy(layer.w[0][0])
+    
+    layer.w[0][0] += adjust
+    loss_one = model(x_train, y_train)[1]
+    
+    layer.w[0][0] = save
+    layer.w[0][0] -= adjust
+    loss_two = model(x_train, y_train)[1]
+    
+    numeric = (loss_one - loss_two) / (2 * adjust)
+    
+    layer.w[0][0] = save
+    model(x_train, y_train)
+    model.backward()
+    backward_result = layer.d_w[0][0]
+    
+    diff = abs(backward_result - numeric)
+    return diff
