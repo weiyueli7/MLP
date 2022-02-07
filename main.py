@@ -2,6 +2,7 @@
 # CSE 151b: Programming Assignment 2
 # Code snippet by Eric Yang Yu, Ajit Kumar, Savyasachi
 # Winter 2022
+# Implemented by Linghang Kong, Weiyue Li, and Yi Li
 ################################################################################
 # To install PyYaml, refer to the instructions for your system:
 # https://pyyaml.org/wiki/PyYAMLDocumentation

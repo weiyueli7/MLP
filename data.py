@@ -2,6 +2,7 @@
 # CSE 151b: Programming Assignment 2
 # Code snippet by Eric Yang Yu, Ajit Kumar, Savyasachi
 # Winter 2022
+# Implemented by Linghang Kong, Weiyue Li, and Yi Li
 ################################################################################
 import os
 import pickle
@@ -9,7 +10,9 @@ import copy
 import numpy as np
 import yaml
 from tqdm import tqdm
-
+################################################################################
+# We used one_hot_encoding and onehot_decode methods directly extracted from PA1
+################################################################################
 
 def one_hot_encoding(labels, num_classes=10):
     """

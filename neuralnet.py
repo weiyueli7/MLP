@@ -2,6 +2,7 @@
 # CSE 253: Programming Assignment 2
 # Code snippet by Eric Yang Yu, Ajit Kumar, Savyasachi
 # Winter 2022
+# Implemented by Linghang Kong, Weiyue Li, and Yi Li
 ################################################################################
 
 import numpy as np
@@ -42,6 +43,8 @@ class Activation:
         Compute the forward pass.
         """
         self.x = a
+        
+        #Initialize the corresponding activation function obtained from config
         if self.activation_type == "sigmoid":
             return self.sigmoid(a)
 
@@ -55,6 +58,8 @@ class Activation:
         """
         Compute the backward pass.
         """
+        
+        #Calculate gradient of corresponding activation function
         if self.activation_type == "sigmoid":
             grad = self.grad_sigmoid()
 
@@ -64,6 +69,7 @@ class Activation:
         elif self.activation_type == "ReLU":
             grad = self.grad_ReLU()
 
+        #g'(a)*\delta
         return grad * delta
 
     def sigmoid(self, x):
@@ -129,6 +135,8 @@ class Layer:
         self.d_w = None  # Save the gradient w.r.t w in this
         self.d_b = None  # Save the gradient w.r.t b in this
         self.weight_decay = 0
+        
+        #weight and bias with momentum
         self.m_w = 0
         self.m_b = 0
 
@@ -144,16 +152,22 @@ class Layer:
         Do not apply activation here.
         Return self.a
         """
+        
+        #a = wTx + b
         self.x = x
         self.a = self.x @ self.w + self.b
         return self.a
     
     def L1(self, w):
+        
+        #Find the gradient for L1 Regularization
         w_1 = np.where(w < 0, -1, w)
         w_2 = np.where(w_1 > 0, 1, w_1)
         return w_2
     
     def L2(self, w):
+        
+        #Find the gradient for L2 Regularization
         return 2 * w
 
     def backward(self, delta, gamma, regularization = False, L = 'L1'):
@@ -162,11 +176,14 @@ class Layer:
         computes gradient for its weights and the delta to pass to its previous layers.
         Return self.dx
         """
+        #Add regularization when regularization is True
         if regularization:
             if L == 'L1':
                 self.weight_decay = self.L1(self.w)
             else:
                 self.weight_decay = self.L2(self.w)
+        
+        #Algorithm derived from PA2 Individual part & Lectures
         prev_delta = delta @ self.w.T
         self.d_x = delta @ self.w.T
         self.d_w = -(self.x.T @ delta)
@@ -222,10 +239,13 @@ class NeuralNetwork:
         Compute forward pass through all the layers in the network and return it.
         If targets are provided, return loss as well.
         """
+        
         self.x = x
         self.targets = targets
         for layer in self.layers:
             self.x = layer(self.x)
+        
+        #output using softmax
         self.y = self.softmax(self.x)
         if targets is None:
             return self.y, None
@@ -236,8 +256,11 @@ class NeuralNetwork:
         Implement backpropagation here.
         Call backward methods of individual layer's.
         """
+        #delta_k
         delta = self.targets - self.y
         self.deltas = [delta]
+        
+        
         for i in range(len(self.layers) - 1, -1, -1):
             if isinstance(self.layers[i], Layer):
                 if regularization:
