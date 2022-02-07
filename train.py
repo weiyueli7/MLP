@@ -230,12 +230,10 @@ def check_gradients(x_train, y_train, adjust, config, random_row):
     # apply + \epsilon
     layer.b[0][random_row] += adjust
     loss_one = model(x_train, y_train)[1]
-    print(loss_one)
     # apply - \epsilon
     layer.b[0][random_row] = save
     layer.b[0][random_row] -= adjust
     loss_two = model(x_train, y_train)[1]
-    print(loss_two)
     # calculate the approximation
     numeric = (loss_one - loss_two) / (2 * adjust)
     print("numerical approximation: " + str(numeric))

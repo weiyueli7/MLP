@@ -10,7 +10,7 @@ Source code for CSE 151B Winter 2022 PA2.
 
 ## Description
 
-We continued with the Japanese Hiragana handwriting dataset from Programming Assignment 1. We preprocessed the data by converting all images from 2 dimensional arrays of size (28,28) into one-dimensional arrays of size 784. We applied z-score normalization to the samples and shuffled them before the training process. The data was split into 80% training data and 20% validation data. For saving time purposes, we have only used one-fold cross validation according to the write-up. After fine-tuning, changing number of layers and experimenting with different network topologies, we were able to obtain XXX accuracy on our best model on the validation set.
+We continued with the Japanese Hiragana handwriting dataset from Programming Assignment 1. We preprocessed the data by converting all images from 2 dimensional arrays of size (28,28) into one-dimensional arrays of size 784. We applied z-score normalization to the samples and shuffled them before the training process. The data was split into 80% training data and 20% validation data. For saving time purposes, we have only used one-fold cross validation according to the write-up. After fine-tuning, changing number of layers and experimenting with different network topologies, we were able to obtain 0.8626 accuracy on our best model on the validation set.
 
 ## Getting Started
 
