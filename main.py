@@ -65,83 +65,38 @@ if __name__ == "__main__":
     if args.topology:
         topology_experiment(x_train, y_train, x_val, y_val, x_test, y_test, config)
 
-
+    # part b
+    # an example to check backprop gradients with the approximated gradients
+    # please modify if you want to check other examples
+    check_gradients(np.array([x_train[107]]), np.array([y_train[107]]), 1e-2, load_config('config.yaml'),8)
+    
+    # part c
+    # print out the train, validation, and test loss and accuracy for this configuration's lr
     print("Find Best Model\n_____________________________________________________________________")
-
     candidate = train_mlp(x_train[0:ind], y_train[0:ind], x_train[ind:], \
                       y_train[ind:], x_test, y_test, load_config('config.yaml'))
 
-    # print("Activation Experiments\n______________________________________________________________")
-    # data_act = activation_experiment(x_train[0:ind], y_train[0:ind], x_train[ind:], \
-    #                   y_train[ind:], x_test, y_test, load_config('config.yaml'))
-    
-    # # plot the graphs
-    # # activation_functions = {0: 'sigmoid', 1: 'tanh', 2: 'ReLU'}
-    # # for i in range(len(data_act)):
-    # #     data_plt, label_plt = data_act[i]['train_acc'], "Training Accuracy"
-    # #     data2_plt, label2_plt = data_act[i]['val_acc'], "Validation Accuracy"
-    # #     data3_plt, label3_plt = data_act[i]['train_loss'], "Training Loss"
-    # #     data4_plt, label4_plt = data_act[i]['val_loss'], "Validation Loss"
-    # #     xlabel_plt, ylabel_plt = "Epochs", "Accuracy"
-    # #     xlabel2_plt, ylabel2_plt = "Epochs", "Loss"
-    
-    # #     # 1st plot
-    # #     fig, ax = plt.subplots()
-    # #     ax.plot(data_plt, label = label_plt)
-    # #     ax.plot(data2_plt, label = label2_plt)
-    # #     plt.xlabel(xlabel_plt)
-    # #     plt.ylabel(ylabel_plt)
-    # #     plt.title('Training vs Validation Accuracy Activation_' + str(i + 1))
-    # #     legend = ax.legend(loc='lower right')
-    # #     plt.savefig( str(config['learning_rate']).replace('.', '') + '_' + \
-    # #         activation_functions[i] + '_' + str(config['early_stop'])[0].lower() + "_" + \
-    # #             str(config['layer_specs'])[1:-1].replace(", ", "_") + '_acc.png')
-    
-    # #     # 2nd plot
-    # #     fig, ax = plt.subplots()
-    # #     ax.plot(data3_plt, label = label3_plt)
-    # #     ax.plot(data4_plt, label = label4_plt)
-    # #     plt.xlabel(xlabel2_plt)
-    # #     plt.ylabel(ylabel2_plt)
-    # #     plt.title('Training vs Validation Loss Activation_' + str(i + 1))
-    # #     legend = ax.legend(loc='lower right')
-    # #     plt.savefig( str(config['learning_rate']).replace('.', '') + '_' + \
-    # #         activation_functions[i] + '_' + str(config['early_stop'])[0].lower() + "_" + \
-    # #         str(config['layer_specs'])[1:-1].replace(", ", "_") +'_loss.png')
-    
-    # print("Topology Experiments\n________________________________________________________________")
-    # data_top = topology_experiment(x_train[0:ind], y_train[0:ind], x_train[ind:], 
-    #                   y_train[ind:], x_test, y_test, load_config('config.yaml'))
+    # part d
+    # print out the train, validation, and test loss and accuracy for this L2 regularization
+    print("L2 Regularization\n______________________________________________________________")
+    l2 = regularization_experiment(x_train[0:ind], y_train[0:ind], x_train[ind:], 
+                       y_train[ind:], x_test, y_test, load_config('config.yaml'), L = 'L2')
 
-    # tops = {0: 'half', 1: 'one', 2: 'dub', 3:'dub_layer'}
-    # # for i in range(len(data_top)):
-    # #     data_plt, label_plt = data_top[i]['train_acc'], "Training Accuracy"
-    # #     data2_plt, label2_plt = data_top[i]['val_acc'], "Validation Accuracy"
-    # #     data3_plt, label3_plt = data_top[i]['train_loss'], "Training Loss"
-    # #     data4_plt, label4_plt = data_top[i]['val_loss'], "Validation Loss"
-    # #     xlabel_plt, ylabel_plt = "Epochs", "Accuracy"
-    # #     xlabel2_plt, ylabel2_plt = "Epochs", "Loss"
+    # print out the train, validation, and test loss and accuracy for this L1 regularization
+    print("L1 Regularization\n______________________________________________________________")
+    l2 = regularization_experiment(x_train[0:ind], y_train[0:ind], x_train[ind:], 
+                       y_train[ind:], x_test, y_test, load_config('config.yaml'), L = 'L1')
+
+    # part e
+    # print out the train, validation, and test loss and accuracy for this activation experiments
+    print("Activation Experiments\n______________________________________________________________")
+    data_act = activation_experiment(x_train[0:ind], y_train[0:ind], x_train[ind:], \
+                      y_train[ind:], x_test, y_test, load_config('config.yaml'))
     
-    # #     # 1st plot
-    # #     fig, ax = plt.subplots()
-    # #     ax.plot(data_plt, label = label_plt)
-    # #     ax.plot(data2_plt, label = label2_plt)
-    # #     plt.xlabel(xlabel_plt)
-    # #     plt.ylabel(ylabel_plt)
-    # #     plt.title('Training vs Validation Accuracy Activation_' + str(i + 1))
-    # #     legend = ax.legend(loc='lower right')
-    # #     plt.savefig( str(config['learning_rate']).replace('.', '') + '_' + \
-    # #         tops[i] + '_' + str(config['early_stop'])[0].lower() + "_" +\
-    # #          str(config['layer_specs'])[1:-1].replace(", ", "_") + '_acc.png')
-    
-    # #     # 2nd plot
-    # #     fig, ax = plt.subplots()
-    # #     ax.plot(data3_plt, label = label3_plt)
-    # #     ax.plot(data4_plt, label = label4_plt)
-    # #     plt.xlabel(xlabel2_plt)
-    # #     plt.ylabel(ylabel2_plt)
-    # #     plt.title('Training vs Validation Loss Activation_' + str(i + 1))
-    # #     legend = ax.legend(loc='lower right')
-    # #     plt.savefig( str(config['learning_rate']).replace('.', '') + '_' + \
-    # #         tops[i] + '_' + str(config['early_stop'])[0].lower() + "_" + \
-    # #         str(config['layer_specs'])[1:-1].replace(", ", "_") + '_loss.png')
+    # part f
+    #print out the train, validation, and test loss and accuracy for this topology experiments
+    print("Topology Experiments\n________________________________________________________________")
+    data_top = topology_experiment(x_train[0:ind], y_train[0:ind], x_train[ind:], 
+                      y_train[ind:], x_test, y_test, load_config('config.yaml'))
+
+
