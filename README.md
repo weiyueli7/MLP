@@ -1,16 +1,11 @@
----
-title: Image Classification in Practice: Implementing Multi-layer Neural Network Using Numpy
-author: Weiyue Li
-date: 02/06/2022
----
 
-# Image Classification in Practice: Implementing Multi-layer Neural Network Using Numpy
+# Optimization and Evaluation of Multi-layer Neural Networks: Exploring Regularization, Learning Rates, and Topologies
 
-Source code for CSE 151B Winter 2022 PA2.
+A report is aviliable [here](report.pdf).
 
 ## Description
 
-We continued with the Japanese Hiragana handwriting dataset from Programming Assignment 1. We preprocessed the data by converting all images from 2 dimensional arrays of size (28,28) into one-dimensional arrays of size 784. We applied z-score normalization to the samples and shuffled them before the training process. The data was split into 80% training data and 20% validation data. For saving time purposes, we have only used one-fold cross validation according to the write-up. After fine-tuning, changing number of layers and experimenting with different network topologies, we were able to obtain 0.8626 accuracy on our best model on the validation set.
+In this work, we implement a multi-layer neural network equipped with forward and backward propagation, various regularization techniques, and momentum-based optimization. Our objective was to classify Japanese Hiragana handwritten characters from the [KMNIST dataset](https://github.com/rois-codh/kmnist), employing softmax as the output layer. One-fold cross-validation was utilized to evaluate the model, coupled with the integration of regularization techniques. Our most efficient model leveraged ReLU activations and achieved an accuracy of **0.8688**. Subsequent architecture adjustments, including layer count and hidden unit modifications, yielded a test set accuracy of **0.8626**.
 
 ## Getting Started
 
@@ -63,7 +58,3 @@ Contributors names and contact info (alphabetical order):
     * wel019@ucsd.edu
 * Li, Yi
     * yil115@ucsd.edu 
-
-## Acknowledgments
-
-We appriciate the help from course Piazza and TA/Tutor office hours, as well as the knowledge gained from Professor [Garrison W. Cottrell](https://cseweb.ucsd.edu/~gary/)'s lectures.
